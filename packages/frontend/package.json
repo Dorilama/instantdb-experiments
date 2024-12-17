@@ -9,10 +9,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dorilama/instantdb-vue": "0.3.6",
+    "@tanstack/vue-table": "^8.20.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.468.0",
+    "radix-vue": "^1.9.11",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^5.2.1",
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^3.4.16",
     "typescript": "~5.6.2",
     "vite": "^6.0.1",
     "vue-tsc": "^2.1.10"
