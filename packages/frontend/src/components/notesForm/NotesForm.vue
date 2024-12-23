@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useTemplateRef } from "vue";
 import { useForm, useSubmitForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
@@ -16,8 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-
-const formRef = useTemplateRef<HTMLFormElement>("form");
 
 const formSchema = toTypedSchema(
   z.object({

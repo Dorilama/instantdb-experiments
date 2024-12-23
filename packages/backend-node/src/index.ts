@@ -8,7 +8,17 @@ type Note = InstaQLEntity<typeof schema, "notes">;
 const { onQuery } = init({ appId: APP_ID, schema });
 
 onQuery(
-  { notes: { $: { where: { createdAt: { $isNull: true } }, limit: 20 } } },
+  {
+    notes: {
+      $: {
+        where: { createdAt: { $isNull: true } },
+        limit: 20,
+        order: {
+          serverCreatedAt: "asc",
+        },
+      },
+    },
+  },
   (ctx) => {
     if (ctx.res.data?.notes?.length) {
       const now = Date.now();
