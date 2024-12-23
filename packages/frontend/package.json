@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dorilama/instantdb-vue": "0.3.6",
+    "@dorilama/instantdb-vue": "0.4.1",
     "@tanstack/vue-table": "^8.20.5",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^12.2.0",

@@ -1,5 +1,5 @@
 import {
-  init_experimental,
+  init,
   id,
   type InstaQLParams,
   type InstaQLResult,
@@ -10,7 +10,7 @@ if (import.meta.env.DEV) {
   localStorage.setItem("__instantLogging", "true");
 }
 
-const db = init_experimental({
+const db = init({
   appId: import.meta.env.VITE_INSTANT_APP_ID,
   schema,
 });

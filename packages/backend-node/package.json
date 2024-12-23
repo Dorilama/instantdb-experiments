@@ -1,0 +1,18 @@
+{
+  "name": "backend-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-strip-types --env-file=.env ./src/index.ts",
+    "dev": "node --experimental-strip-types --env-file=.development.env --watch ./src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@dorilama/instantdb-server": "0.1.3"
+  }
+}
