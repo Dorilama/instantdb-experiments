@@ -1,4 +1,4 @@
-import type { InstaQLParams, InstaQLResult } from "@dorilama/instantdb-vue";
+import type { InstaQLParams, InstaQLResult } from "@/db";
 import { schema } from "instant";
 
 export const allNotesQuery = { notes: {} } satisfies InstaQLParams<
