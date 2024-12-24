@@ -36,7 +36,7 @@ const text = computed(() => {
     return ``;
   }
   if (countdown.value > 0) {
-    return countdown.value / 1000;
+    return (countdown.value / 1000).toFixed(3);
   }
   if (countdown.value >= -1000 * 5) {
     return "now...";
@@ -46,5 +46,5 @@ const text = computed(() => {
 </script>
 
 <template>
-  <div>{{ text }}</div>
+  <div class="tabular-nums font-extralight">{{ text }}</div>
 </template>

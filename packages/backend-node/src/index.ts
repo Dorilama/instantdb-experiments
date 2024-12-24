@@ -63,29 +63,33 @@ onQuery(expireQuery, (ctx) => {
   }
 });
 
-// onQuery(
-//   {
-//     notes: {
-//       $: {
-//         where: { $ilike: "%hello%" },
-//         limit: 20,
-//         order: {
-//           serverCreatedAt: "asc",
-//         },
-//       },
-//     },
-//   },
-//   (ctx) => {
-//     console.log(ctx.res.data?.notes?.length);
-//     if (ctx.res.data?.notes?.length) {
-//       const chunks = ctx.res.data.notes.map((note) => {
-//         return ctx.db.tx.notes[note.id].update({
-//           title: note.title.replaceAll(/hello/g, "h***o"),
-//         });
-//       });
-//       ctx.db.transact(chunks);
-//     }
-//   }
-// );
+onQuery(
+  {
+    notes: {
+      $: {
+        where: { title: { $ilike: "%hello%" } },
+        limit: 20,
+        order: {
+          serverCreatedAt: "asc",
+        },
+      },
+    },
+  },
+  (ctx) => {
+    if (ctx.res.data?.notes?.length) {
+      const chunks = ctx.res.data.notes.map((note) => {
+        return ctx.db.tx.notes[note.id].update({
+          title: note.title.replaceAll(/hello/gi, (match) => {
+            return (
+              match.slice(0, 1) + "*".repeat(match.length - 2) + match.slice(-1)
+            );
+          }),
+          label: "flagged",
+        });
+      });
+      ctx.db.transact(chunks);
+    }
+  }
+);
 
 console.log("started!");

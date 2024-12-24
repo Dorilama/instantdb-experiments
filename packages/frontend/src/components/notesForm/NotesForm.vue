@@ -59,7 +59,6 @@ const onSubmit = handleSubmit(submit);
 const manualSubmit = useSubmitForm(submit);
 
 function submitOnShiftEnter(event: KeyboardEvent) {
-  console.log(event.key, event.shiftKey);
   if (event.key === "Enter" && event.shiftKey) {
     event.preventDefault();
     manualSubmit();
@@ -81,8 +80,9 @@ function submitOnShiftEnter(event: KeyboardEvent) {
           ></Textarea>
         </FormControl>
         <FormDescription>
-          This note will be automatically deleted after
-          {{ expiresAfter / 1000 }} seconds
+          The server will automatically delete this note after
+          {{ expiresAfter / 1000 }} seconds.<br />
+          It will also redact the text "hello"
         </FormDescription>
         <FormMessage />
       </FormItem>

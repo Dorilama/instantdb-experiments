@@ -22,10 +22,11 @@ export const columns: ColumnDef<AllNotesResult["notes"][number]>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: () => h("div", { class: "text-left" }, "Countdown"),
+    header: () => h("div", { class: "text-right" }, "Countdown"),
     cell: ({ row }) => {
-      return h("div", { class: "flex space-x-2" }, [
+      return h("div", { class: "" }, [
         h(CountDown, {
+          class: "text-right",
           createdAt:
             row.getValue<AllNotesResult["notes"][number]["createdAt"]>(
               "createdAt"
