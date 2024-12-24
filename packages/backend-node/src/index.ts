@@ -1,4 +1,4 @@
-import { init } from "@dorilama/instantdb-server";
+import { init, signal, effect, computed } from "@dorilama/instantdb-server";
 import { schema, expiresAfter } from "instant";
 
 const APP_ID = process.env["INSTANT_APP_ID"]!;
@@ -28,18 +28,21 @@ onQuery(
   }
 );
 
-const interval = 1000;
+const interval = 1000 * 1;
 
-let lastCheck = Date.now();
+const now = signal(Date.now());
+setInterval(() => {
+  now.value = Date.now();
+}, interval);
 
-function makeExpireQuery() {
+const expireQuery = computed(() => {
   return {
     notes: {
       $: {
         where: {
           or: [
-            { createdAt: { $lte: Date.now() - expiresAfter } },
-            { createdAt: { $gt: Date.now() + expiresAfter } },
+            { createdAt: { $lte: now.value - expiresAfter } },
+            { createdAt: { $gt: now.value + expiresAfter } },
           ],
         },
         limit: 20,
@@ -49,29 +52,40 @@ function makeExpireQuery() {
       },
     },
   };
-}
+});
 
-function scheduleExpireQuery(
-  ctx: Parameters<Parameters<typeof onQuery>[1]>[0]
-) {
-  setTimeout(() => {
-    ctx.query.value = makeExpireQuery();
-  }),
-    Date.now() - (lastCheck + interval);
-}
-
-onQuery(makeExpireQuery(), (ctx) => {
-  lastCheck = Date.now();
+onQuery(expireQuery, (ctx) => {
   if (ctx.res.data?.notes?.length) {
     const chunks = ctx.res.data.notes.map((note) => {
       return ctx.db.tx.notes[note.id].delete();
     });
-    ctx.db.transact(chunks).then(() => {
-      scheduleExpireQuery(ctx);
-    });
-  } else {
-    scheduleExpireQuery(ctx);
+    ctx.db.transact(chunks);
   }
 });
+
+// onQuery(
+//   {
+//     notes: {
+//       $: {
+//         where: { $ilike: "%hello%" },
+//         limit: 20,
+//         order: {
+//           serverCreatedAt: "asc",
+//         },
+//       },
+//     },
+//   },
+//   (ctx) => {
+//     console.log(ctx.res.data?.notes?.length);
+//     if (ctx.res.data?.notes?.length) {
+//       const chunks = ctx.res.data.notes.map((note) => {
+//         return ctx.db.tx.notes[note.id].update({
+//           title: note.title.replaceAll(/hello/g, "h***o"),
+//         });
+//       });
+//       ctx.db.transact(chunks);
+//     }
+//   }
+// );
 
 console.log("started!");

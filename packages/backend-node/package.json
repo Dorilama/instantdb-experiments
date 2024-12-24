@@ -13,6 +13,6 @@
   "description": "",
   "type": "module",
   "dependencies": {
-    "@dorilama/instantdb-server": "0.1.4"
+    "@dorilama/instantdb-server": "0.1.5"
   }
 }
