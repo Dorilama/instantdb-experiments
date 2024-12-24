@@ -4,6 +4,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
 
 import { db, id } from "@/db";
+import { expiresAfter } from "instant";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,7 @@ const formSchema = toTypedSchema(
   z.object({
     title: z
       .string()
+      .trim()
       .min(1, {
         message: "Note must be at least 1 character.",
       })
@@ -35,7 +37,11 @@ const { handleSubmit } = useForm({
 
 const submit: Parameters<typeof handleSubmit>[0] = async (values, actions) => {
   try {
-    await db.transact(db.tx.notes[id()].update({ title: values.title }));
+    await db.transact(
+      db.tx.notes[id()].update({
+        title: values.title,
+      })
+    );
     actions.resetForm();
   } catch (error) {
     const defaultMessage = "Unknown error";
@@ -75,7 +81,8 @@ function submitOnShiftEnter(event: KeyboardEvent) {
           ></Textarea>
         </FormControl>
         <FormDescription>
-          This note will be automatically deleted after one minute
+          This note will be automatically deleted after
+          {{ expiresAfter / 1000 }} seconds
         </FormDescription>
         <FormMessage />
       </FormItem>

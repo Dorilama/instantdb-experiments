@@ -30,6 +30,7 @@ export const columns: ColumnDef<AllNotesResult["notes"][number]>[] = [
             row.getValue<AllNotesResult["notes"][number]["createdAt"]>(
               "createdAt"
             ),
+          interval: 100,
         }),
       ]);
     },

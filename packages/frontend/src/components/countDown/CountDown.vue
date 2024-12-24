@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useIntervalFn } from "@vueuse/core";
 import { expiresAfter } from "instant";
 
-const props = defineProps<{ createdAt?: number }>();
+const props = defineProps<{ createdAt?: number; interval?: number }>();
 
 const expiresAt = computed(() => {
   return (props.createdAt || Date.now()) + expiresAfter;
@@ -15,7 +15,7 @@ const { pause, resume } = useIntervalFn(
   () => {
     countdown.value = expiresAt.value - Date.now();
   },
-  1000,
+  () => props.interval || 1000,
   { immediate: !!props.createdAt }
 );
 
