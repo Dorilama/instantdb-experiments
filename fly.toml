@@ -1,0 +1,20 @@
+# fly.toml app configuration file generated for instantdb-live-backend-node on 2024-12-24T11:19:26+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'instantdb-live-backend-node'
+primary_region = 'iad'
+
+[build]
+
+[env]
+  INSTANT_APP_ID = '016bc8f1-32ca-4af2-9114-a3086b79bc24'
+
+[[restart]]
+  policy = 'always'
+  retries = 10
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

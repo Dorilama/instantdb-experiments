@@ -23,6 +23,7 @@ onQuery(
       const chunks = ctx.res.data.notes.map((note) => {
         return ctx.db.tx.notes[note.id].update({ createdAt: now });
       });
+      console.log(`added ${chunks.length} createdAt`);
       ctx.db.transact(chunks);
     }
   }
@@ -59,6 +60,7 @@ onQuery(expireQuery, (ctx) => {
     const chunks = ctx.res.data.notes.map((note) => {
       return ctx.db.tx.notes[note.id].delete();
     });
+    console.log(`deleted ${chunks.length}`);
     ctx.db.transact(chunks);
   }
 });
@@ -87,6 +89,7 @@ onQuery(
           label: "flagged",
         });
       });
+      console.log(`flagged ${chunks.length}`);
       ctx.db.transact(chunks);
     }
   }

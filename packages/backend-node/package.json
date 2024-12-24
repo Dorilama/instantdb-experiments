@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --experimental-strip-types --env-file=.env ./src/index.ts",
+    "start": "node --experimental-strip-types ./src/index.ts",
     "dev": "node --experimental-strip-types --env-file=.development.env --watch ./src/index.ts"
   },
   "keywords": [],

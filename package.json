@@ -5,7 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:backend": "fly deploy --ha=false --smoke-checks=false"
   },
   "keywords": [],
   "author": "",
