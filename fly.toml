@@ -11,9 +11,7 @@ primary_region = 'iad'
 [env]
   INSTANT_APP_ID = '016bc8f1-32ca-4af2-9114-a3086b79bc24'
 
-[[restart]]
-  policy = 'always'
-  retries = 10
+[[services]]
 
 [[vm]]
   size = 'shared-cpu-1x'

@@ -5,6 +5,13 @@ const APP_ID = process.env["INSTANT_APP_ID"]!;
 
 const { onQuery } = init({ appId: APP_ID, schema });
 
+const interval = 1000 * 1;
+
+const now = signal(Date.now());
+setInterval(() => {
+  now.value = Date.now();
+}, interval);
+
 onQuery(
   {
     notes: {
@@ -19,22 +26,19 @@ onQuery(
   },
   (ctx) => {
     if (ctx.res.data?.notes?.length) {
-      const now = Date.now();
+      const localNow = Date.now();
       const chunks = ctx.res.data.notes.map((note) => {
-        return ctx.db.tx.notes[note.id].update({ createdAt: now });
+        return ctx.db.tx.notes[note.id].update({ createdAt: localNow });
       });
-      console.log(`added ${chunks.length} createdAt`);
+      console.log(
+        `added ${chunks.length} createdAt`,
+        JSON.stringify(ctx.res.data.notes, null, 2),
+        new Date(now.value).toISOString()
+      );
       ctx.db.transact(chunks);
     }
   }
 );
-
-const interval = 1000 * 1;
-
-const now = signal(Date.now());
-setInterval(() => {
-  now.value = Date.now();
-}, interval);
 
 const expireQuery = computed(() => {
   return {
@@ -60,7 +64,12 @@ onQuery(expireQuery, (ctx) => {
     const chunks = ctx.res.data.notes.map((note) => {
       return ctx.db.tx.notes[note.id].delete();
     });
-    console.log(`deleted ${chunks.length}`);
+    console.log(
+      `deleted ${chunks.length}`,
+      JSON.stringify(ctx.res.data.notes, null, 2),
+      new Date(now.value).toISOString(),
+      JSON.stringify(ctx.query.value, null, 2)
+    );
     ctx.db.transact(chunks);
   }
 });
@@ -89,7 +98,11 @@ onQuery(
           label: "flagged",
         });
       });
-      console.log(`flagged ${chunks.length}`);
+      console.log(
+        `flagged ${chunks.length}`,
+        JSON.stringify(ctx.res.data.notes, null, 2),
+        new Date(now.value).toISOString()
+      );
       ctx.db.transact(chunks);
     }
   }
