@@ -43,7 +43,7 @@ const expireQuery = computed(() => {
         where: {
           or: [
             { createdAt: { $lte: now.value - expiresAfter } },
-            { createdAt: { $gt: now.value + expiresAfter } },
+            { createdAt: { $gt: now.value + expiresAfter + 1000 * 5 } },
           ],
         },
         limit: 20,
