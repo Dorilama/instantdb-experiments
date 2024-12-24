@@ -30,11 +30,7 @@ onQuery(
       const chunks = ctx.res.data.notes.map((note) => {
         return ctx.db.tx.notes[note.id].update({ createdAt: localNow });
       });
-      console.log(
-        `added ${chunks.length} createdAt`,
-        JSON.stringify(ctx.res.data.notes, null, 2),
-        new Date(now.value).toISOString()
-      );
+      console.log(`added ${chunks.length} createdAt`, now.value);
       ctx.db.transact(chunks);
     }
   }
@@ -66,9 +62,9 @@ onQuery(expireQuery, (ctx) => {
     });
     console.log(
       `deleted ${chunks.length}`,
-      JSON.stringify(ctx.res.data.notes, null, 2),
-      new Date(now.value).toISOString(),
-      JSON.stringify(ctx.query.value, null, 2)
+      ctx.res.data.notes.map((note) => note.createdAt),
+      now.value,
+      ctx.query.value?.notes.$.where.or.map((w) => w.createdAt)
     );
     ctx.db.transact(chunks);
   }
@@ -100,8 +96,8 @@ onQuery(
       });
       console.log(
         `flagged ${chunks.length}`,
-        JSON.stringify(ctx.res.data.notes, null, 2),
-        new Date(now.value).toISOString()
+        ctx.res.data.notes.map((note) => note.createdAt),
+        now.value
       );
       ctx.db.transact(chunks);
     }
