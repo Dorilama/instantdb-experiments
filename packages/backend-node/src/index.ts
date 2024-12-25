@@ -64,7 +64,17 @@ onQuery(expireQuery, (ctx) => {
       `deleted ${chunks.length}`,
       ctx.res.data.notes.map((note) => note.createdAt),
       now.value,
-      ctx.query.value?.notes.$.where.or.map((w) => w.createdAt)
+      ctx.query.value?.notes.$.where.or.map((w) => w.createdAt),
+      ctx.res.data.notes.map(
+        (note) =>
+          (note.createdAt || 0) <=
+          (ctx.query.value?.notes.$.where.or[0].createdAt.$lte || 0)
+      ),
+      ctx.res.data.notes.map(
+        (note) =>
+          (note.createdAt || 0) >
+          (ctx.query.value?.notes.$.where.or[1].createdAt.$gt || 0)
+      )
     );
     ctx.db.transact(chunks);
   }
