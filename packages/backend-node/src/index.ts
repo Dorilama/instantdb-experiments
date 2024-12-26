@@ -1,9 +1,9 @@
 import { init, signal, effect, computed } from "@dorilama/instantdb-server";
-import { schema, expiresAfter } from "instant";
+import { schema, expiresAfter, type Note } from "instant";
 
 const APP_ID = process.env["INSTANT_APP_ID"]!;
 
-const { onQuery } = init({ appId: APP_ID, schema });
+const { onQuery, db } = init({ appId: APP_ID, schema });
 
 const interval = 1000 * 1;
 
@@ -36,49 +36,92 @@ onQuery(
   }
 );
 
-const expireQuery = computed(() => {
-  return {
+const maybeExpiredNotes = signal<Note[]>([]);
+const maybeInvalidNotes = signal<Note[]>([]);
+
+effect(() => {
+  const lte = now.value - expiresAfter;
+  const notes: Note[] = [];
+  for (let note of maybeExpiredNotes.value) {
+    if (note.createdAt && note.createdAt <= lte) {
+      notes.push(note);
+    } else {
+      break;
+    }
+  }
+
+  if (notes.length) {
+    const chunks = notes.map((note) => {
+      return db.tx.notes[note.id].delete();
+    });
+    console.log(
+      `deleted ${chunks.length} expired`,
+      notes.map((note) => note.createdAt),
+      `now: ${now.value}`,
+      `lte: ${lte}`
+    );
+    db.transact(chunks);
+  }
+});
+
+effect(() => {
+  const gt = now.value + expiresAfter + 1000 * 5;
+  const notes: Note[] = [];
+  for (let note of maybeInvalidNotes.value) {
+    if (note.createdAt && note.createdAt > gt) {
+      notes.push(note);
+    } else {
+      break;
+    }
+  }
+
+  if (notes.length) {
+    const chunks = notes.map((note) => {
+      return db.tx.notes[note.id].delete();
+    });
+    console.log(
+      `deleted ${chunks.length} invalid`,
+      notes.map((note) => note.createdAt),
+      `now: ${now.value}`,
+      `gt: ${gt}`
+    );
+    db.transact(chunks);
+  }
+});
+
+onQuery(
+  {
     notes: {
       $: {
-        where: {
-          or: [
-            { createdAt: { $lte: now.value - expiresAfter } },
-            { createdAt: { $gt: now.value + expiresAfter + 1000 * 5 } },
-          ],
-        },
+        where: { createdAt: { $isNull: false } },
         limit: 20,
         order: {
-          serverCreatedAt: "asc" as const,
+          createdAt: "asc",
         },
       },
     },
-  };
-});
-
-onQuery(expireQuery, (ctx) => {
-  if (ctx.res.data?.notes?.length) {
-    const chunks = ctx.res.data.notes.map((note) => {
-      return ctx.db.tx.notes[note.id].delete();
-    });
-    console.log(
-      `deleted ${chunks.length}`,
-      ctx.res.data.notes.map((note) => note.createdAt),
-      now.value,
-      ctx.query.value?.notes.$.where.or.map((w) => w.createdAt),
-      ctx.res.data.notes.map(
-        (note) =>
-          (note.createdAt || 0) <=
-          (ctx.query.value?.notes.$.where.or[0].createdAt.$lte || 0)
-      ),
-      ctx.res.data.notes.map(
-        (note) =>
-          (note.createdAt || 0) >
-          (ctx.query.value?.notes.$.where.or[1].createdAt.$gt || 0)
-      )
-    );
-    ctx.db.transact(chunks);
+  },
+  (ctx) => {
+    maybeExpiredNotes.value = ctx.res.data?.notes || [];
   }
-});
+);
+
+onQuery(
+  {
+    notes: {
+      $: {
+        where: { createdAt: { $isNull: false } },
+        limit: 20,
+        order: {
+          createdAt: "desc",
+        },
+      },
+    },
+  },
+  (ctx) => {
+    maybeInvalidNotes.value = ctx.res.data?.notes || [];
+  }
+);
 
 onQuery(
   {
