@@ -30,7 +30,7 @@ const stopCreatedQuery = onQuery(
       const chunks = ctx.res.data.notes.map((note) => {
         return ctx.db.tx.notes[note.id].update({ createdAt: localNow });
       });
-      console.log(`added ${chunks.length} createdAt`, now.value);
+      console.log(`added ${chunks.length} createdAt`, localNow, now.value);
       ctx.db.transact(chunks);
     }
   }

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { allNotesQuery } from "@/components/notesTable/db";
 import { columns } from "@/components/notesTable/columns";
 import DataTable from "@/components/notesTable/DataTable.vue";
 import NotesForm from "./components/notesForm/NotesForm.vue";
 import { db } from "@/db";
 
-const { data } = db.useQuery(allNotesQuery);
+const { data } = db.useQuery({ notes: { $: { limit: 25 } } });
 </script>
 
 <template>
