@@ -8,11 +8,11 @@ const { onQuery, db } = init({ appId: APP_ID, schema });
 const interval = 1000 * 1;
 
 const now = signal(Date.now());
-setInterval(() => {
+const intervalId = setInterval(() => {
   now.value = Date.now();
 }, interval);
 
-onQuery(
+const stopCreatedQuery = onQuery(
   {
     notes: {
       $: {
@@ -39,7 +39,7 @@ onQuery(
 const maybeExpiredNotes = signal<Note[]>([]);
 const maybeInvalidNotes = signal<Note[]>([]);
 
-effect(() => {
+const stopExpiredEffect = effect(() => {
   const lte = now.value - expiresAfter;
   const notes: Note[] = [];
   for (let note of maybeExpiredNotes.value) {
@@ -64,7 +64,7 @@ effect(() => {
   }
 });
 
-effect(() => {
+const stopInvalidEffect = effect(() => {
   const gt = now.value + expiresAfter + 1000 * 5;
   const notes: Note[] = [];
   for (let note of maybeInvalidNotes.value) {
@@ -89,7 +89,7 @@ effect(() => {
   }
 });
 
-onQuery(
+const stopExpiredQuery = onQuery(
   {
     notes: {
       $: {
@@ -106,7 +106,7 @@ onQuery(
   }
 );
 
-onQuery(
+const stopInvalidQuery = onQuery(
   {
     notes: {
       $: {
@@ -123,7 +123,7 @@ onQuery(
   }
 );
 
-onQuery(
+const stopRedactedQuery = onQuery(
   {
     notes: {
       $: {
@@ -156,5 +156,18 @@ onQuery(
     }
   }
 );
+
+process.on("SIGINT", () => {
+  console.log("cleaning up");
+  stopCreatedQuery();
+  stopExpiredQuery();
+  stopInvalidQuery();
+  stopRedactedQuery();
+  stopExpiredEffect();
+  stopInvalidEffect();
+  clearInterval(intervalId);
+  console.log("all clean");
+  process.exit(0);
+});
 
 console.log("started!");
