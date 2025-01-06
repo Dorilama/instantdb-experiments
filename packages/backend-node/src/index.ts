@@ -3,7 +3,7 @@ import { schema, expiresAfter, type Note } from "instant";
 
 const APP_ID = process.env["INSTANT_APP_ID"]!;
 
-const { onQuery, db } = init({ appId: APP_ID, schema });
+const db = init({ appId: APP_ID, schema });
 
 const interval = 1000 * 1;
 
@@ -12,37 +12,52 @@ const intervalId = setInterval(() => {
   now.value = Date.now();
 }, interval);
 
-const stopCreatedQuery = onQuery(
-  {
-    notes: {
-      $: {
-        where: { createdAt: { $isNull: true } },
-        limit: 20,
-        order: {
-          serverCreatedAt: "asc",
-        },
+const createdQuery = db.useQuery({
+  notes: {
+    $: {
+      where: { createdAt: { $isNull: true } },
+      limit: 20,
+      order: {
+        serverCreatedAt: "asc",
       },
     },
   },
-  (ctx) => {
-    if (ctx.res.data?.notes?.length) {
-      const localNow = Date.now();
-      const chunks = ctx.res.data.notes.map((note) => {
-        return ctx.db.tx.notes[note.id].update({ createdAt: localNow });
-      });
-      console.log(`added ${chunks.length} createdAt`, localNow, now.value);
-      ctx.db.transact(chunks);
-    }
-  }
-);
+});
 
-const maybeExpiredNotes = signal<Note[]>([]);
-const maybeInvalidNotes = signal<Note[]>([]);
+const stopCreatedEffect = effect(() => {
+  const { data } = createdQuery;
+  if (data.value?.notes?.length) {
+    const localNow = Date.now();
+    const chunks = data.value.notes.map((note) => {
+      return db.tx.notes[note.id].update({ createdAt: localNow });
+    });
+    console.log(`added ${chunks.length} createdAt`, localNow, now.value);
+    db.transact(chunks);
+  }
+});
+
+function stopCreated() {
+  createdQuery.stop();
+  stopCreatedEffect();
+}
+
+const expiredQuery = db.useQuery({
+  notes: {
+    $: {
+      where: { createdAt: { $isNull: false } },
+      limit: 20,
+      order: {
+        createdAt: "asc",
+      },
+    },
+  },
+});
 
 const stopExpiredEffect = effect(() => {
+  const { data } = expiredQuery;
   const lte = now.value - expiresAfter;
   const notes: Note[] = [];
-  for (let note of maybeExpiredNotes.value) {
+  for (let note of data.value?.notes || []) {
     if (note.createdAt && note.createdAt <= lte) {
       notes.push(note);
     } else {
@@ -64,10 +79,28 @@ const stopExpiredEffect = effect(() => {
   }
 });
 
+function stopExpired() {
+  expiredQuery.stop();
+  stopExpiredEffect();
+}
+
+const invalidQuery = db.useQuery({
+  notes: {
+    $: {
+      where: { createdAt: { $isNull: false } },
+      limit: 20,
+      order: {
+        createdAt: "desc",
+      },
+    },
+  },
+});
+
 const stopInvalidEffect = effect(() => {
+  const { data } = invalidQuery;
   const gt = now.value + expiresAfter + 1000 * 5;
   const notes: Note[] = [];
-  for (let note of maybeInvalidNotes.value) {
+  for (let note of data.value?.notes || []) {
     if (note.createdAt && note.createdAt > gt) {
       notes.push(note);
     } else {
@@ -89,82 +122,56 @@ const stopInvalidEffect = effect(() => {
   }
 });
 
-const stopExpiredQuery = onQuery(
-  {
-    notes: {
-      $: {
-        where: { createdAt: { $isNull: false } },
-        limit: 20,
-        order: {
-          createdAt: "asc",
-        },
-      },
-    },
-  },
-  (ctx) => {
-    maybeExpiredNotes.value = ctx.res.data?.notes || [];
-  }
-);
+function stopInvalid() {
+  invalidQuery.stop();
+  stopInvalidEffect();
+}
 
-const stopInvalidQuery = onQuery(
-  {
-    notes: {
-      $: {
-        where: { createdAt: { $isNull: false } },
-        limit: 20,
-        order: {
-          createdAt: "desc",
-        },
+const toRedactQuery = db.useQuery({
+  notes: {
+    $: {
+      where: { title: { $ilike: "%hello%" } },
+      limit: 20,
+      order: {
+        serverCreatedAt: "asc",
       },
     },
   },
-  (ctx) => {
-    maybeInvalidNotes.value = ctx.res.data?.notes || [];
-  }
-);
+});
 
-const stopRedactedQuery = onQuery(
-  {
-    notes: {
-      $: {
-        where: { title: { $ilike: "%hello%" } },
-        limit: 20,
-        order: {
-          serverCreatedAt: "asc",
-        },
-      },
-    },
-  },
-  (ctx) => {
-    if (ctx.res.data?.notes?.length) {
-      const chunks = ctx.res.data.notes.map((note) => {
-        return ctx.db.tx.notes[note.id].update({
-          title: note.title.replaceAll(/hello/gi, (match) => {
-            return (
-              match.slice(0, 1) + "*".repeat(match.length - 2) + match.slice(-1)
-            );
-          }),
-          label: "flagged",
-        });
+const stopToRedactEffect = effect(() => {
+  const { data } = toRedactQuery;
+  if (data.value?.notes?.length) {
+    const chunks = data.value.notes.map((note) => {
+      return db.tx.notes[note.id].update({
+        title: note.title.replaceAll(/hello/gi, (match) => {
+          return (
+            match.slice(0, 1) + "*".repeat(match.length - 2) + match.slice(-1)
+          );
+        }),
+        label: "flagged",
       });
-      console.log(
-        `flagged ${chunks.length}`,
-        ctx.res.data.notes.map((note) => note.createdAt),
-        now.value
-      );
-      ctx.db.transact(chunks);
-    }
+    });
+    console.log(
+      `flagged ${chunks.length}`,
+      data.value.notes.map((note) => note.createdAt),
+      now.value
+    );
+    db.transact(chunks);
   }
-);
+});
+
+function stopToRedact() {
+  toRedactQuery.stop();
+  stopToRedactEffect();
+}
 
 process.on("SIGINT", () => {
   console.log("cleaning up");
-  stopCreatedQuery();
-  stopExpiredQuery();
-  stopInvalidQuery();
-  stopRedactedQuery();
-  stopExpiredEffect();
-  stopInvalidEffect();
+  stopCreated();
+  stopExpired();
+  stopInvalid();
+  stopToRedact();
   clearInterval(intervalId);
   console.log("all clean");
   process.exit(0);

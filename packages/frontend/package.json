@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "update": "npm i --save-exact @dorilama/instantdb-vue@latest"
   },
   "dependencies": {
-    "@dorilama/instantdb-vue": "0.4.1",
+    "@dorilama/instantdb-vue": "0.4.2",
     "@tanstack/vue-table": "^8.20.5",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^12.2.0",
