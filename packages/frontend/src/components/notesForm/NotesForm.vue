@@ -2,6 +2,14 @@
 import { useForm, useSubmitForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 import { db, id } from "@/db";
 import { expiresAfter } from "instant";
@@ -67,26 +75,41 @@ function submitOnShiftEnter(event: KeyboardEvent) {
 </script>
 
 <template>
-  <form @submit="onSubmit" ref="form">
-    <FormField v-slot="{ componentField }" name="title">
-      <FormItem>
-        <FormLabel class="sr-only">Note</FormLabel>
-        <FormControl>
-          <Textarea
-            type="text"
-            placeholder="write your note"
-            v-bind="componentField"
-            @keydown="submitOnShiftEnter"
-          ></Textarea>
-        </FormControl>
-        <FormDescription>
-          The server will automatically delete this note after
-          {{ expiresAfter / 1000 }} seconds.<br />
-          It will also redact the text "hello"
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    </FormField>
-    <Button type="submit"> Add </Button>
-  </form>
+  <Card class="w-full max-w-sm">
+    <CardHeader>
+      <CardTitle class="text-2xl"> Create note </CardTitle>
+      <CardDescription
+        >The server will automatically delete this note after
+        {{ expiresAfter / 1000 }} seconds.<br />
+        It will also redact the text "hello"</CardDescription
+      >
+    </CardHeader>
+    <CardContent class="grid gap-4">
+      <form @submit="onSubmit" ref="form" id="create-note">
+        <FormField v-slot="{ componentField }" name="title">
+          <FormItem>
+            <FormLabel class="sr-only">Note</FormLabel>
+            <FormControl>
+              <Textarea
+                type="text"
+                placeholder="write your note"
+                v-bind="componentField"
+                @keydown="submitOnShiftEnter"
+                class="min-h-10"
+              ></Textarea>
+            </FormControl>
+            <!-- <FormDescription>
+              The server will automatically delete this note after
+              {{ expiresAfter / 1000 }} seconds.<br />
+              It will also redact the text "hello"
+            </FormDescription> -->
+            <FormMessage />
+          </FormItem>
+        </FormField>
+      </form>
+    </CardContent>
+    <CardFooter>
+      <Button type="submit" form="create-note" class="w-full"> Add </Button>
+    </CardFooter>
+  </Card>
 </template>
