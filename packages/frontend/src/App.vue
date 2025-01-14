@@ -11,10 +11,13 @@ const { data } = db.useQuery({ notes: { $: { limit: 25 } } });
 </script>
 
 <template>
-  <div class="flex flex-col gap-12 container py-10 mx-auto">
-    <div class="flex flex-wrap items-end gap-12">
-      <LoginForm />
-      <NotesForm class="flex flex-col gap-1" />
+  <div class="flex flex-col gap-12 container py-10 mx-auto max-w-screen-lg">
+    <div class="flex flex-wrap items-stretch justify-between gap-12">
+      <LoginForm class="grow" style="flex-basis: calc((40rem - 100%) * 999)" />
+      <NotesForm
+        class="grow flex flex-col gap-1"
+        style="flex-basis: calc((40rem - 100%) * 999)"
+      />
     </div>
 
     <DataTable :columns="columns" :data="data?.notes || []" class="flex-auto" />

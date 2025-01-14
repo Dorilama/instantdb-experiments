@@ -35,7 +35,8 @@ const formSchema = toTypedSchema(
       })
       .max(150, {
         message: "Note must not be longer than 150 characters.",
-      }),
+      })
+      .optional(),
   })
 );
 
@@ -44,6 +45,10 @@ const { handleSubmit } = useForm({
 });
 
 const submit: Parameters<typeof handleSubmit>[0] = async (values, actions) => {
+  if (!values.title) {
+    actions.setFieldError("title", "Required");
+    return;
+  }
   try {
     await db.transact(
       db.tx.notes[id()].update({
@@ -75,17 +80,17 @@ function submitOnShiftEnter(event: KeyboardEvent) {
 </script>
 
 <template>
-  <Card class="w-full max-w-sm">
+  <Card class="flex flex-col justify-between">
     <CardHeader>
       <CardTitle class="text-2xl"> Create note </CardTitle>
       <CardDescription
         >The server will automatically delete this note after
         {{ expiresAfter / 1000 }} seconds.<br />
-        It will also redact the text "hello"</CardDescription
+        It will also redact the text "hello".</CardDescription
       >
     </CardHeader>
     <CardContent class="grid gap-4">
-      <form @submit="onSubmit" ref="form" id="create-note">
+      <form @submit="onSubmit" id="create-note">
         <FormField v-slot="{ componentField }" name="title">
           <FormItem>
             <FormLabel class="sr-only">Note</FormLabel>
