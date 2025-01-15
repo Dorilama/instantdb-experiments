@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { db } from "@/db";
 
 import { sentEmail, lastEmail, error } from "./store";
+import { expiresAfter } from "instant";
 
 const id = useId();
 
@@ -74,7 +75,8 @@ defineExpose({ resetForm });
       <CardTitle class="text-2xl"> Login </CardTitle>
       <CardDescription>
         You can create public notes without login. With an account your notes
-        are private. Your account will be deleted after 1 hour</CardDescription
+        are private. Your account will be deleted after
+        {{ expiresAfter.accounts / 1000 / 60 }} minutes.</CardDescription
       >
     </CardHeader>
     <CardContent class="grid gap-4">

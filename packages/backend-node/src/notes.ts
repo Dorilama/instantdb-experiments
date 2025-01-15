@@ -3,7 +3,7 @@ import {
   effect,
   InstantByosServerDatabase,
 } from "@dorilama/instantdb-server";
-import { expiresAfter, type Note } from "instant";
+import { expiresAfter } from "instant";
 import type { AppSchema } from "instant";
 
 let started = false;
@@ -68,14 +68,10 @@ export function startNotes(db: InstantByosServerDatabase<AppSchema>) {
   const stopExpiredEffect = effect(() => {
     const { data } = expiredQuery;
     const lte = now.value - expiresAfter.notes;
-    const notes: Note[] = [];
-    for (let note of data.value?.notes || []) {
-      if (note.createdAt && note.createdAt <= lte) {
-        notes.push(note);
-      } else {
-        break;
-      }
-    }
+    const notes =
+      data.value?.notes.filter((note) => {
+        return note.createdAt && note.createdAt <= lte;
+      }) || [];
 
     if (notes.length) {
       const chunks = notes.map((note) => {
@@ -111,14 +107,10 @@ export function startNotes(db: InstantByosServerDatabase<AppSchema>) {
   const stopInvalidEffect = effect(() => {
     const { data } = invalidQuery;
     const gt = now.value + expiresAfter.notes + 1000 * 5;
-    const notes: Note[] = [];
-    for (let note of data.value?.notes || []) {
-      if (note.createdAt && note.createdAt > gt) {
-        notes.push(note);
-      } else {
-        break;
-      }
-    }
+    const notes =
+      data.value?.notes.filter((note) => {
+        return note.createdAt && note.createdAt > gt;
+      }) || [];
 
     if (notes.length) {
       const chunks = notes.map((note) => {

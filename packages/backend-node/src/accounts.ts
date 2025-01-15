@@ -5,11 +5,13 @@ import {
   InstantByosServerDatabase,
 } from "@dorilama/instantdb-server";
 import type { InstantAdminDatabase } from "@instantdb/admin";
-import { expiresAfter, type Account } from "instant";
+import { expiresAfter } from "instant";
 import type { AppSchema } from "instant";
 
 const prefix = "[ACCOUNTS]: ";
 let started = false;
+
+const usersToDelete = new Set();
 
 export function startAccounts(
   db: InstantByosServerDatabase<AppSchema>,
@@ -42,18 +44,29 @@ export function startAccounts(
     const { data } = createdQuery;
     if (data.value?.$users?.length) {
       const localNow = Date.now();
-      const chunks = data.value.$users.map((user) => {
-        const accountId = id();
-        return db.tx.accounts[accountId]
-          .update({ createdAt: localNow })
-          .link({ owner: user.id });
-      });
-      console.log(
-        `${prefix}added ${chunks.length} accounts`,
-        localNow,
-        now.value
-      );
-      db.transact(chunks);
+      const chunks = data.value.$users
+        .filter((user) => {
+          const isToDelete = usersToDelete.has(user.id);
+          console.log(user.email, !isToDelete);
+          return !isToDelete;
+        })
+        .map((user) => {
+          const accountId = id();
+          return db.tx.accounts[accountId]
+            .update({ createdAt: localNow })
+            .link({ owner: user.id });
+        });
+      if (chunks.length) {
+        console.log(
+          `${prefix}added ${chunks.length} accounts`,
+          localNow,
+          now.value,
+          process.env.DEV
+            ? data.value.$users.map((user) => user.email)
+            : ["redacted"]
+        );
+        db.transact(chunks);
+      }
     }
   });
 
@@ -62,55 +75,84 @@ export function startAccounts(
     stopCreatedEffect();
   }
 
-  // const expiredQuery = db.useQuery({
-  //   accounts: {
-  //     $: {
-  //       limit: 20,
-  //       order: {
-  //         createdAt: "asc",
-  //       },
-  //     },
-  //   },
-  // });
+  const expiredQuery = db.useQuery({
+    accounts: {
+      owner: {},
+      $: {
+        limit: 20,
+        order: {
+          createdAt: "asc",
+        },
+      },
+    },
+  });
 
-  // const stopExpiredEffect = effect(() => {
-  //   const { data } = expiredQuery;
-  //   const lte = now.value - expiresAfter.accounts;
-  //   const accounts: Account[] = [];
-  //   for (let account of data.value?.accounts || []) {
-  //     if (account.createdAt && account.createdAt <= lte) {
-  //       accounts.push(account);
-  //     } else {
-  //       break;
-  //     }
-  //   }
+  const stopExpiredEffect = effect(() => {
+    const { data } = expiredQuery;
+    const lte = now.value - expiresAfter.accounts;
 
-  //   if (accounts.length) {
-  //     const chunks: any[] = [];
-  //     accounts.forEach((account) => {
-  //       chunks.push(
-  //         adminDb.tx.notes[account.id].delete(),
-  //         adminDb.tx.$users[account.owner.id].delete()
-  //       );
-  //     });
-  //     console.log(
-  //       `${prefix}deleted ${chunks.length} expired`,
-  //       notes.map((note) => note.createdAt),
-  //       `now: ${now.value}`,
-  //       `lte: ${lte}`
-  //     );
-  //     db.transact(chunks);
-  //   }
-  // });
+    const accounts = (
+      data.value?.accounts.filter((account) => {
+        return account.createdAt && account.createdAt <= lte;
+      }) || []
+    ).map((account) => {
+      return { account, email: account.owner?.email, id: account.owner?.id };
+    });
 
-  // function stopExpired() {
-  //   expiredQuery.stop();
-  //   stopExpiredEffect();
-  // }
+    accounts.forEach((account) => {
+      usersToDelete.add(account.id);
+    });
+
+    if (accounts.length) {
+      console.log(
+        `${prefix}deleted ${accounts.length} expired`,
+        accounts.map(({ account }) => account.createdAt),
+        `now: ${now.value}`,
+        `lte: ${lte}`,
+        process.env.DEV
+          ? accounts.map(({ email }) => email || "noemail")
+          : ["redacted"]
+      );
+
+      db.transact(
+        accounts.map(({ account }) => {
+          return db.tx.accounts[account.id].delete();
+        })
+      );
+
+      accounts.forEach(({ email, id }) => {
+        if (!id) {
+          return;
+        }
+        adminDb.auth
+          .deleteUser({ id })
+          .then(() => {
+            setTimeout(() => {
+              usersToDelete.delete(id);
+            }, 1000);
+
+            console.log(
+              `${prefix} deleted user ${process.env.DEV ? (email || "noemail") + ` ${id}` : "redacted"}`
+            );
+          })
+          .catch((error) => {
+            console.error(
+              `error deleting account ${email || "noemail"}, ${id}`,
+              error
+            );
+          });
+      });
+    }
+  });
+
+  function stopExpired() {
+    expiredQuery.stop();
+    stopExpiredEffect();
+  }
 
   function stop() {
     stopCreated();
-    // stopExpired();
+    stopExpired();
     clearInterval(intervalId);
   }
 

@@ -22,6 +22,9 @@ const rules = {
   $users: {
     allow: {
       view: "isOwner || isServerAdmin",
+      create: "false",
+      delete: "false",
+      update: "false",
     },
     bind: [
       "isOwner",

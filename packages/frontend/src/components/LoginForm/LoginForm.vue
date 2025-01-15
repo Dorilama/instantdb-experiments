@@ -5,11 +5,11 @@ import { db } from "@/db";
 import EmailForm from "./EmailForm.vue";
 import CodeForm from "./CodeForm.vue";
 import UserCard from "./UserCard.vue";
-import { sentEmail } from "./store";
+import { sentEmail, error, lastEmail } from "./store";
 
 const { toast } = useToast();
 
-const { user, isLoading, error } = db.useAuth();
+const { user, isLoading, error: authError } = db.useAuth();
 
 const defaultError = "Unknown error";
 
@@ -17,11 +17,11 @@ const emailRef = useTemplateRef<InstanceType<typeof EmailForm>>("email");
 const codeRef = useTemplateRef<InstanceType<typeof CodeForm>>("code");
 
 watchEffect(() => {
-  if (!error.value) {
+  if (!authError.value) {
     return;
   }
   toast({
-    description: error.value.message || defaultError,
+    description: authError.value.message || defaultError,
     variant: "destructive",
   });
 });
@@ -30,6 +30,9 @@ watchEffect(() => {
   if (user.value) {
     emailRef.value?.resetForm();
     codeRef.value?.resetForm();
+    error.value = "";
+    sentEmail.value = "";
+    lastEmail.value = "";
   }
 });
 </script>

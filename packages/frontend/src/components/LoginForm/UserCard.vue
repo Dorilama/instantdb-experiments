@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 
 import { db } from "@/db";
 
+import { expiresAfter } from "instant";
+
 const { user, isLoading } = db.useAuth();
 </script>
 
@@ -28,7 +30,8 @@ const { user, isLoading } = db.useAuth();
     </CardHeader>
     <CardContent class="grid gap-4">
       <p>
-        Your notes will be private. Your account will be deleted after 1 hour.
+        Your notes will be private. Your account will be deleted after
+        {{ expiresAfter.accounts / 1000 / 60 }} minutes.
       </p>
     </CardContent>
     <CardFooter>
