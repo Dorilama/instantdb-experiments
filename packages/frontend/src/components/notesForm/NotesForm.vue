@@ -89,7 +89,7 @@ function submitOnShiftEnter(event: KeyboardEvent) {
       <CardTitle class="text-2xl"> Create note </CardTitle>
       <CardDescription
         >The server will automatically delete this note after
-        {{ expiresAfter / 1000 }} seconds.<br />
+        {{ expiresAfter.notes / 1000 }} seconds.<br />
         It will also redact the text "hello".</CardDescription
       >
     </CardHeader>
@@ -109,7 +109,7 @@ function submitOnShiftEnter(event: KeyboardEvent) {
             </FormControl>
             <!-- <FormDescription>
               The server will automatically delete this note after
-              {{ expiresAfter / 1000 }} seconds.<br />
+              {{ expiresAfter.notes / 1000 }} seconds.<br />
               It will also redact the text "hello"
             </FormDescription> -->
             <FormMessage />

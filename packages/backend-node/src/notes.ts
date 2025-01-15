@@ -1,10 +1,15 @@
-import { init, signal, effect } from "@dorilama/instantdb-server";
+import {
+  signal,
+  effect,
+  InstantByosServerDatabase,
+} from "@dorilama/instantdb-server";
 import { expiresAfter, type Note } from "instant";
 import type { AppSchema } from "instant";
 
 let started = false;
+const prefix = "[NOTES]: ";
 
-export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
+export function startNotes(db: InstantByosServerDatabase<AppSchema>) {
   if (started) {
     return;
   }
@@ -34,7 +39,11 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
       const chunks = data.value.notes.map((note) => {
         return db.tx.notes[note.id].update({ createdAt: localNow });
       });
-      console.log(`added ${chunks.length} createdAt`, localNow, now.value);
+      console.log(
+        `${prefix}added ${chunks.length} createdAt`,
+        localNow,
+        now.value
+      );
       db.transact(chunks);
     }
   });
@@ -58,7 +67,7 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
 
   const stopExpiredEffect = effect(() => {
     const { data } = expiredQuery;
-    const lte = now.value - expiresAfter;
+    const lte = now.value - expiresAfter.notes;
     const notes: Note[] = [];
     for (let note of data.value?.notes || []) {
       if (note.createdAt && note.createdAt <= lte) {
@@ -73,7 +82,7 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
         return db.tx.notes[note.id].delete();
       });
       console.log(
-        `deleted ${chunks.length} expired`,
+        `${prefix}deleted ${chunks.length} expired`,
         notes.map((note) => note.createdAt),
         `now: ${now.value}`,
         `lte: ${lte}`
@@ -101,7 +110,7 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
 
   const stopInvalidEffect = effect(() => {
     const { data } = invalidQuery;
-    const gt = now.value + expiresAfter + 1000 * 5;
+    const gt = now.value + expiresAfter.notes + 1000 * 5;
     const notes: Note[] = [];
     for (let note of data.value?.notes || []) {
       if (note.createdAt && note.createdAt > gt) {
@@ -116,7 +125,7 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
         return db.tx.notes[note.id].delete();
       });
       console.log(
-        `deleted ${chunks.length} invalid`,
+        `${prefix}deleted ${chunks.length} invalid`,
         notes.map((note) => note.createdAt),
         `now: ${now.value}`,
         `gt: ${gt}`
@@ -156,7 +165,7 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
         });
       });
       console.log(
-        `flagged ${chunks.length}`,
+        `${prefix}flagged ${chunks.length}`,
         data.value.notes.map((note) => note.createdAt),
         now.value
       );

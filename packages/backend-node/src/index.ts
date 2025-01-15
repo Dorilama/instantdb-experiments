@@ -2,6 +2,7 @@ import { init, effect } from "@dorilama/instantdb-server";
 import { init as initAdmin } from "@instantdb/admin";
 import { schema } from "instant";
 import { startNotes } from "./notes.ts";
+import { startAccounts } from "./accounts.ts";
 
 export const adminEmail = "server@mariano.dev";
 
@@ -30,6 +31,7 @@ effect(() => {
 });
 
 stopNotes = startNotes(db);
+startAccounts(db, adminEmail, adminDb);
 
 process.on("SIGINT", () => {
   console.log("cleaning up");

@@ -19,6 +19,17 @@ const rules = {
    *   bind: ["isOwner", "data.creator == auth.uid"],
    * },
    */
+  $users: {
+    allow: {
+      view: "isOwner || isServerAdmin",
+    },
+    bind: [
+      "isOwner",
+      "auth.id == data.id",
+      "isServerAdmin",
+      `auth.email in ['server@mariano.dev']`,
+    ],
+  },
   notes: {
     allow: {
       $default: "isPublic || isOwner || isServerAdmin",

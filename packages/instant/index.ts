@@ -1,5 +1,6 @@
 import schema, { type AppSchema } from "./instant.schema.ts";
 import type { InstaQLEntity } from "@instantdb/core";
-const expiresAfter = 1000 * 30;
+const expiresAfter = { notes: 30 * 1000, accounts: 60 * 60 * 1000 };
 type Note = InstaQLEntity<typeof schema, "notes">;
-export { type AppSchema, type Note, schema, expiresAfter };
+type Account = InstaQLEntity<typeof schema, "accounts">;
+export { type AppSchema, schema, expiresAfter, type Note, type Account };

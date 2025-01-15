@@ -6,7 +6,7 @@ import { expiresAfter } from "instant";
 const props = defineProps<{ createdAt?: number; interval?: number }>();
 
 const expiresAt = computed(() => {
-  return (props.createdAt || Date.now()) + expiresAfter;
+  return (props.createdAt || Date.now()) + expiresAfter.notes;
 });
 
 const countdown = ref(expiresAt.value - Date.now());
