@@ -40,7 +40,7 @@ const formSchema = toTypedSchema(
   })
 );
 
-const { handleSubmit, resetForm } = useForm({
+const { handleSubmit, resetForm, isSubmitting } = useForm({
   validationSchema: formSchema,
 });
 
@@ -105,7 +105,12 @@ defineExpose({ resetForm });
       </form>
     </CardContent>
     <CardFooter>
-      <Button type="submit" :form="id" class="w-full" :disabled="isLoading">
+      <Button
+        type="submit"
+        :form="id"
+        class="w-full"
+        :disabled="isLoading || isSubmitting"
+      >
         Verify
       </Button>
     </CardFooter>

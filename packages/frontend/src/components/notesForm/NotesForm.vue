@@ -42,7 +42,7 @@ const formSchema = toTypedSchema(
   })
 );
 
-const { handleSubmit } = useForm({
+const { handleSubmit, isSubmitting } = useForm({
   validationSchema: formSchema,
 });
 
@@ -86,6 +86,9 @@ const manualSubmit = useSubmitForm(submit);
 function submitOnShiftEnter(event: KeyboardEvent) {
   if (event.key === "Enter" && event.shiftKey) {
     event.preventDefault();
+    if (isSubmitting.value) {
+      return;
+    }
     manualSubmit();
   }
 }
@@ -100,6 +103,7 @@ function submitOnShiftEnter(event: KeyboardEvent) {
         {{ expiresAfter.notes / 1000 }} seconds.<br />
         It will also redact the text "hello".</CardDescription
       >
+      {{ isSubmitting ? "yes" : "no" }}
     </CardHeader>
     <CardContent class="grid gap-4">
       <form @submit="onSubmit" id="create-note">
@@ -126,7 +130,14 @@ function submitOnShiftEnter(event: KeyboardEvent) {
       </form>
     </CardContent>
     <CardFooter>
-      <Button type="submit" form="create-note" class="w-full"> Add </Button>
+      <Button
+        type="submit"
+        form="create-note"
+        class="w-full"
+        :disabled="isSubmitting"
+      >
+        Add
+      </Button>
     </CardFooter>
   </Card>
 </template>
