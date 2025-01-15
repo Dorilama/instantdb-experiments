@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 
+const { user } = db.useAuth();
+
 const formSchema = toTypedSchema(
   z.object({
     title: z
@@ -51,9 +53,11 @@ const submit: Parameters<typeof handleSubmit>[0] = async (values, actions) => {
   }
   try {
     await db.transact(
-      db.tx.notes[id()].update({
-        title: values.title,
-      })
+      db.tx.notes[id()]
+        .update({
+          title: values.title,
+        })
+        .link({ owner: user.value?.id })
     );
     actions.resetForm();
   } catch (error) {
