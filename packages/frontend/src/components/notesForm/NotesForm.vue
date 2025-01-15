@@ -52,13 +52,21 @@ const submit: Parameters<typeof handleSubmit>[0] = async (values, actions) => {
     return;
   }
   try {
-    await db.transact(
-      db.tx.notes[id()]
-        .update({
+    if (user.value?.id) {
+      await db.transact(
+        db.tx.notes[id()]
+          .update({
+            title: values.title,
+          })
+          .link({ owner: user.value?.id })
+      );
+    } else {
+      await db.transact(
+        db.tx.notes[id()].update({
           title: values.title,
         })
-        .link({ owner: user.value?.id })
-    );
+      );
+    }
     actions.resetForm();
   } catch (error) {
     const defaultMessage = "Unknown error";
