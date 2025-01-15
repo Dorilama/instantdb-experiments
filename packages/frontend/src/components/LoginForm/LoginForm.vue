@@ -9,7 +9,7 @@ import { sentEmail, error, lastEmail } from "./store";
 
 const { toast } = useToast();
 
-const { user, isLoading, error: authError } = db.useAuth();
+const { user, error: authError } = db.useAuth();
 
 const defaultError = "Unknown error";
 
