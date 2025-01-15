@@ -2,7 +2,12 @@ import { init, signal, effect } from "@dorilama/instantdb-server";
 import { expiresAfter, type Note } from "instant";
 import type { AppSchema } from "instant";
 
+let started = false;
+
 export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
+  if (started) {
+    return;
+  }
   const interval = 1000 * 1;
 
   const now = signal(Date.now());
@@ -171,6 +176,8 @@ export function startNotes(db: ReturnType<typeof init<AppSchema>>) {
     stopToRedact();
     clearInterval(intervalId);
   }
+
+  started = true;
 
   return stop;
 }

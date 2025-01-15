@@ -1,7 +1,6 @@
 // Docs: https://www.instantdb.com/docs/permissions
 
 import type { InstantRules } from "@instantdb/core";
-import { adminEmail } from "backend-node";
 
 const rules = {
   /**
@@ -30,7 +29,7 @@ const rules = {
       "isOwner",
       "auth.id != null && data.owner!= null && auth.id in data.ref('owner.id')",
       "isServerAdmin",
-      `auth.email in ['${adminEmail}']`,
+      `auth.email in ['server@mariano.dev']`,
     ],
   },
   accounts: {
@@ -42,7 +41,7 @@ const rules = {
       "isOwner",
       "auth.id != null && data.owner!= null && auth.id in data.ref('owner.id')",
       "isServerAdmin",
-      `auth.email in ['${adminEmail}']`,
+      `auth.email in ['server@mariano.dev']`,
     ],
   },
 } satisfies InstantRules;
