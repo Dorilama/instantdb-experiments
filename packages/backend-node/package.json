@@ -14,7 +14,7 @@
   "description": "",
   "type": "module",
   "dependencies": {
-    "@dorilama/instantdb-server": "0.2.3",
+    "@dorilama/instantdb-server": "0.2.4",
     "@instantdb/admin": "0.17.7"
   }
 }
