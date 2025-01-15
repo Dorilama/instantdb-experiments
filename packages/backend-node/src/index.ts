@@ -1,6 +1,8 @@
 import { init, signal, effect, computed } from "@dorilama/instantdb-server";
 import { schema, expiresAfter, type Note } from "instant";
 
+export const adminEmail = "server@mariano.dev";
+
 const APP_ID = process.env["INSTANT_APP_ID"]!;
 
 const db = init({ appId: APP_ID, schema });

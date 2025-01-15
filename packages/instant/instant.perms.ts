@@ -1,6 +1,7 @@
 // Docs: https://www.instantdb.com/docs/permissions
 
 import type { InstantRules } from "@instantdb/core";
+import { adminEmail } from "backend-node";
 
 const rules = {
   /**
@@ -19,6 +20,31 @@ const rules = {
    *   bind: ["isOwner", "data.creator == auth.uid"],
    * },
    */
+  notes: {
+    allow: {
+      $default: "isPublic || isOwner || isServerAdmin",
+    },
+    bind: [
+      "isPublic",
+      "data.owner == null",
+      "isOwner",
+      "auth.id != null && data.owner!= null && auth.id in data.ref('owner.id')",
+      "isServerAdmin",
+      `auth.email in ['${adminEmail}']`,
+    ],
+  },
+  accounts: {
+    allow: {
+      $default: "isServerAdmin",
+      view: "isOwner || isServerAdmin",
+    },
+    bind: [
+      "isOwner",
+      "auth.id != null && data.owner!= null && auth.id in data.ref('owner.id')",
+      "isServerAdmin",
+      `auth.email in ['${adminEmail}']`,
+    ],
+  },
 } satisfies InstantRules;
 
 export default rules;

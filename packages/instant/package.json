@@ -4,14 +4,15 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "update": "npm i --save-exact @instantdb/core@latest"
+    "update": "npm i --save-exact @instantdb/core@latest instant-cli@latest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@instantdb/core": "0.17.7"
+    "@instantdb/core": "0.17.7",
+    "instant-cli": "0.17.7"
   },
   "type": "module"
 }
