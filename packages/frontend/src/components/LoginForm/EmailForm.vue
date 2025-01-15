@@ -37,7 +37,7 @@ const defaultError = "Unknown error";
 
 const formSchema = toTypedSchema(
   z.object({
-    email: z.string().email({ message: "Invalid email address" }).optional(),
+    email: z.string().optional(),
   })
 );
 
