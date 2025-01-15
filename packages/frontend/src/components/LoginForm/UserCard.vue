@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import {
   Card,
   CardContent,
@@ -15,6 +16,18 @@ import { db } from "@/db";
 import { expiresAfter } from "instant";
 
 const { user, isLoading } = db.useAuth();
+const { data } = db.useQuery({ $users: { account: {} } });
+const expirationText = computed(() => {
+  const createdAt = data.value?.$users[0].account?.createdAt;
+  if (createdAt) {
+    const date = new Date(createdAt + expiresAfter.accounts);
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "full",
+      timeStyle: "long",
+    }).format(date);
+  }
+  return `${expiresAfter.accounts / 1000 / 60} minutes`;
+});
 </script>
 
 <template>
@@ -31,7 +44,7 @@ const { user, isLoading } = db.useAuth();
     <CardContent class="grid gap-4">
       <p>
         Your notes will be private. Your account will be deleted after
-        {{ expiresAfter.accounts / 1000 / 60 }} minutes.
+        {{ expirationText }}.
       </p>
     </CardContent>
     <CardFooter>

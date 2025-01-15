@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-vue-next";
 
 import { db } from "@/db";
 
@@ -112,6 +113,7 @@ defineExpose({ resetForm });
         :disabled="isLoading || isSubmitting"
       >
         Verify
+        <Loader2 v-if="isSubmitting" class="w-4 h-4 mr-2 animate-spin" />
       </Button>
     </CardFooter>
   </Card>

@@ -103,7 +103,6 @@ function submitOnShiftEnter(event: KeyboardEvent) {
         {{ expiresAfter.notes / 1000 }} seconds.<br />
         It will also redact the text "hello".</CardDescription
       >
-      {{ isSubmitting ? "yes" : "no" }}
     </CardHeader>
     <CardContent class="grid gap-4">
       <form @submit="onSubmit" id="create-note">
