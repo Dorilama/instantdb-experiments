@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@instantdb/core": "0.17.5"
+    "@instantdb/core": "0.17.7"
   },
   "type": "module"
 }
