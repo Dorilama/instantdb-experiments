@@ -57,6 +57,7 @@ const submit: Parameters<typeof handleSubmit>[0] = async (values, actions) => {
         db.tx.notes[id()]
           .update({
             title: values.title,
+            label: "private",
           })
           .link({ owner: user.value?.id })
       );

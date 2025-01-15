@@ -153,7 +153,7 @@ export function startNotes(db: InstantByosServerDatabase<AppSchema>) {
               match.slice(0, 1) + "*".repeat(match.length - 2) + match.slice(-1)
             );
           }),
-          label: "flagged",
+          label: note.label ? `${note.label}-flagged` : "flagged",
         });
       });
       console.log(
