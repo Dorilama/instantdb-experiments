@@ -9,7 +9,7 @@ export const adminEmail = "server@mariano.dev";
 let shutDownTimer = setTimeout(
   () => {
     console.log("restarting");
-    process.exit(1);
+    process.exit(0);
   },
   1000 * 60 * 60 * 12
 );
@@ -23,6 +23,8 @@ const token = await adminDb.auth.createToken(adminEmail);
 const db = init({ appId: APP_ID, schema });
 const { isLoading, user } = db.useAuth();
 
+const conneCtionStatus = db.useConnectionStatus();
+
 effect(() => {
   if (isLoading.value || user.value) {
     return;
@@ -33,6 +35,24 @@ effect(() => {
 effect(() => {
   if (user.value) {
     console.log(`logged in as ${user.value.email}`);
+  }
+});
+
+const allGoodConnectionStatus: (typeof conneCtionStatus.value)[] = [
+  "authenticated",
+  "connecting",
+  "opened",
+];
+
+effect(() => {
+  if (
+    !allGoodConnectionStatus.includes(conneCtionStatus.value) &&
+    !user.value
+  ) {
+    console.log(
+      `bad connectionStatus: ${conneCtionStatus.value}. user: ${!!user.value}`
+    );
+    process.exit(1);
   }
 });
 
