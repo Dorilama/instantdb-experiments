@@ -6,6 +6,14 @@ import { startAccounts } from "./accounts.ts";
 
 export const adminEmail = "server@mariano.dev";
 
+let shutDownTimer = setTimeout(
+  () => {
+    console.log("restarting");
+    process.exit(1);
+  },
+  1000 * 60 * 60 * 12
+);
+
 const APP_ID = process.env["INSTANT_APP_ID"]!;
 const ADMIN_SECRET = process.env["INSTANT_ADMIN_SECRET"]!;
 
@@ -14,8 +22,6 @@ const token = await adminDb.auth.createToken(adminEmail);
 
 const db = init({ appId: APP_ID, schema });
 const { isLoading, user } = db.useAuth();
-
-let stopNotes: (() => void) | undefined;
 
 effect(() => {
   if (isLoading.value || user.value) {
@@ -30,12 +36,13 @@ effect(() => {
   }
 });
 
-stopNotes = startNotes(db);
-startAccounts(db, adminEmail, adminDb);
+const stopNotes = startNotes(db);
+const stopAccounts = startAccounts(db, adminEmail, adminDb);
 
 process.on("SIGINT", () => {
   console.log("cleaning up");
   stopNotes?.();
+  stopAccounts?.();
   console.log("all clean");
   process.exit(0);
 });
