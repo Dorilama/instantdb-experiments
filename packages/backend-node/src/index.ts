@@ -4,7 +4,7 @@ import { schema } from "instant";
 import { startNotes } from "./notes.ts";
 import { startAccounts } from "./accounts.ts";
 
-export const adminEmail = "server@mariano.dev";
+export const adminEmail = process.env["ADMIN_EMAIL"];
 
 let shutDownTimer = setTimeout(
   () => {
